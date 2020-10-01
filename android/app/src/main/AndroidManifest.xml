@@ -14,7 +14,7 @@
         android:label="grocery_app"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.google.android.geo.API_KEY"
-               android:value="AIzaSyBm_ebjskNby2jVdfv0zCV5wxAf3N7P9I8"/>
+               android:value=API KEY/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

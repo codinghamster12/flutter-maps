@@ -48,36 +48,30 @@ class _MyAppState extends State<MyApp> {
 
   }
 
-  void initMarker(specify,specifyId) async{
-   
-    var markerIdVal= specifyId;
-    double distance= specify['distance'];
-    setState((){
-      _markers.add(Marker(
-      markerId: MarkerId(markerIdVal),
-      position: LatLng(specify['position']['geopoint'].latitude, specify['position']['geopoint'].longitude),
-      icon: BitmapDescriptor.defaultMarker,
-      infoWindow: InfoWindow(title: 'Magic Marker distance is $distance km')
-    ));
 
-    });
-    
-    
- 
-  }
+  void _updateMarker(List<DocumentSnapshot> documentList) async{
+    var pos = await location.getLocation();
+    double lat = pos.latitude;
+    double lng = pos.longitude;
 
-  void _getMarkerData(List<DocumentSnapshot> documentList){
+    // Make a referece to firestore
+    var ref = firestore.collection('locations');
+    GeoFirePoint center = geo.point(latitude: lat, longitude: lng);
 
    
-     
+    _markers.clear();
     documentList.forEach((DocumentSnapshot document) {
+      
+      GeoPoint geopoint= document.data()['position']['geopoint'];
+      double distance = center.distance(lat: geopoint.latitude, lng: geopoint.longitude);
+
       setState((){
       
       _markers.add(Marker(
       markerId: MarkerId(document.id),
       position: LatLng(document.data()['position']['geopoint'].latitude, document.data()['position']['geopoint'].longitude),
       icon: BitmapDescriptor.defaultMarker,
-      infoWindow: InfoWindow(title: 'Magic Marker distance is ${document.data()['distance']} km')
+      infoWindow: InfoWindow(title: 'Magic Marker distance is $distance km from query center')
     ));
       });
       
@@ -97,7 +91,6 @@ class _MyAppState extends State<MyApp> {
     // Make a referece to firestore
     var ref = firestore.collection('locations');
     GeoFirePoint center = geo.point(latitude: lat, longitude: lng);
-
     // subscribe to query
     subscription = radius.switchMap((rad) {
       print(rad);
@@ -105,9 +98,9 @@ class _MyAppState extends State<MyApp> {
         center: center, 
         radius: rad, 
         field: 'position', 
-        strictMode: true
+        strictMode: true,
       );
-    }).listen(_getMarkerData);
+    }).listen(_updateMarker);
   }
 
    _updateQuery(value) async{
